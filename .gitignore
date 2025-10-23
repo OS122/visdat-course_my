@@ -89,3 +89,5 @@ public
 # Temporary folders
 tmp/
 temp/
+
+*.pdf
