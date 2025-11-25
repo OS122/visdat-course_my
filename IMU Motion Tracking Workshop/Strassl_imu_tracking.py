@@ -98,7 +98,7 @@ def butter_lowpass_filter(data, cutoff, fs, order=2):
     return filtered_data
 
 # Filter parameters
-cutoff_frequency = 5  # Hz (adjust based on your movement speed)
+cutoff_frequency = 10  # Hz (adjust based on your movement speed)
 fs = sampling_rate
 
 # Apply filter to accelerometer data
@@ -438,49 +438,3 @@ ax2.grid(True)
 plt.tight_layout()
 plt.savefig('IMU Motion Tracking Workshop/figures/08_zupt_comparison.png', dpi=300)
 plt.show()
-
-#--------------------------------------
-# Challenge: Filter Comparison:
-from scipy.signal import savgol_filter
-
-# Compare three filter types
-cutoffs = [3, 5, 10]  # Hz
-fig, axes = plt.subplots(1, 3, figsize=(18, 5))
-
-for idx, fc in enumerate(cutoffs):
-    # Apply Butterworth filter with different cutoffs
-    df[f'accel_x_f{fc}'] = butter_lowpass_filter(df['accel_x'], fc, sampling_rate)
-    
-    # Recalculate trajectory (simplified - you would repeat full pipeline)
-    # ... orientation, transformation, integration ...
-    
-    axes[idx].plot(df['pos_x'], df['pos_y'])
-    axes[idx].set_title(f'Trajectory with {fc} Hz Cutoff')
-    axes[idx].set_xlabel('X (m)')
-    axes[idx].set_ylabel('Y (m)')
-    axes[idx].axis('equal')
-    axes[idx].grid(True)
-
-plt.tight_layout()
-plt.savefig('IMU Motion Tracking Workshop/figures/09_different_filtering.png', dpi=300)
-plt.show()
-
-#--------------------------------------
-# Challenge: Sensor Bias Estimation:
-# Use first stationary period to estimate bias
-stationary_period = df[df['time'] <= 2.0]
-
-# Estimate acceleration bias
-accel_bias = stationary_period[['accel_x_filt', 'accel_y_filt', 'accel_z_filt']].mean()
-print(f"Estimated acceleration bias: {accel_bias.values}")
-
-# Estimate gyroscope bias
-gyro_bias = stationary_period[['gyro_x_filt', 'gyro_y_filt', 'gyro_z_filt']].mean()
-print(f"Estimated gyroscope bias: {gyro_bias.values}")
-
-# Apply bias correction
-df['accel_x_corrected'] = df['accel_x_filt'] - accel_bias['accel_x_filt']
-df['accel_y_corrected'] = df['accel_y_filt'] - accel_bias['accel_y_filt']
-df['accel_z_corrected'] = df['accel_z_filt'] - accel_bias['accel_z_filt']
-
-# Repeat full pipeline with corrected data and compare results
