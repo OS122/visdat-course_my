@@ -49,6 +49,7 @@ module.exports = {
         'data-processing/pandas-fundamentals',
         'data-processing/hdf5-storage',
         'data-processing/sample-datasets',
+        'data-processing/motion-tracking-assignment',
       ],
     },
     {
@@ -57,6 +58,9 @@ module.exports = {
       items: [
         'visualization/introduction',
         'visualization/matplotlib',
+        'visualization/3d-visualization-vtk',
+        'visualization/meshio-file-conversion',
+        'visualization/3d-visualization-pyvista',
       ],
     },
   ],
