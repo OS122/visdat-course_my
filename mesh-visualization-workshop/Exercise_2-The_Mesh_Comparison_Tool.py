@@ -61,7 +61,7 @@ def visualize_comparison(original, modified):
     
     # Difference
     pl.subplot(0, 2)
-    pl.add_mesh(diff_mesh, scalars='difference', cmap='coolwarm')
+    pl.add_mesh(diff_mesh, scalars='difference', cmap='coolwarm',copy_mesh=True)
     pl.add_text('Difference', font_size=10)
     #print("Difference range: ",diff_mesh['difference'].min(), " to ", diff_mesh['difference'].max(),"MPa")
     
