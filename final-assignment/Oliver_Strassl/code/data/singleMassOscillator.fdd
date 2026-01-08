@@ -1,0 +1,119 @@
+$RIGID_BODY:
+name: body
+geometry: Sphere 1.000000
+position: 0.000000, 0.000000, 0.000000
+x_axis: 1.00000000, 0.00000000, 0.00000000
+y_axis: 0.00000000, 1.00000000, 0.00000000
+z_axis:0.00000000, -0.00000000, 1.00000000
+color: 200 200 200   200
+transparency: 50
+initial velocity: 0.000000, 0.000000, 0.000000
+initial omega: 0.000000, 0.000000, 0.000000
+consider vel inertia forces: 0
+mass: 0.001000
+COG: 0.000000, 0.000000, 0.000000
+inertia: 0.001000, 0.001000, 0.001000
+i1_axis: 1.00000000, 0.00000000, 0.00000000
+i2_axis: 0.00000000, 1.00000000, 0.00000000
+i3_axis: 0.00000000, 0.00000000, 1.00000000
+
+$CONSTRAINT:
+name: translationalJoint
+body1: body
+body2: GROUND
+dx: 1
+dy: 0
+dz: 1
+ax: 1
+ay: 1
+az: 1
+position: 0.000000, 0.000000, 0.000000
+x_axis: 1.00000000, 0.00000000, 0.00000000
+y_axis: 0.00000000, 1.00000000, 0.00000000
+z_axis: 0.00000000, -0.00000000, 1.00000000
+
+$FORCE_GenericForce:
+name: excitation
+body1: body
+body2: GROUND
+PointOfApplication_Body1: 0.000000, 0.000000, 0.000000
+PointOfApplication_Body2: 0.000000, 0.000000, 0.000000
+mode: Space fixed
+direction: 0.000000, 1.000000, 0.000000
+ForceExpression: sin(SIMTIME[])*10.0
+
+$FORCE_GenericForce:
+name: springDamperForce
+body1: body
+body2: GROUND
+PointOfApplication_Body1: 0.000000, 0.000000, 0.000000
+PointOfApplication_Body2: 0.000000, 0.000000, 0.000000
+mode: Space fixed
+direction: 0.000000, 1.000000, 0.000000
+ForceExpression: -PARVAL[c1]*MEAVAL[mea_y]-PARVAL[d1]*MEAVAL[mea_vy]
+
+$DATAOBJECT_PARAMETER:
+name: c1
+InitialValue: 1.000000
+
+$DATAOBJECT_PARAMETER:
+name: d1
+InitialValue: 0.100000
+
+$MEASURE:
+name: mea_y
+body1: body
+body2: GROUND
+type: displacement
+component: 2
+location_body1: 0.000000, 0.000000, 0.000000
+location_body2: 0.000000, 0.000000, 0.000000
+use_initial_value: 1
+
+$MEASURE:
+name: mea_vy
+body1: body
+body2: GROUND
+type: velocity
+component: 2
+location_body1: 0.000000, 0.000000, 0.000000
+location_body2: 0.000000, 0.000000, 0.000000
+use_initial_value: 1
+
+$SOLVER:
+SimulationTimeBegin: 0.000000
+SimulationTimeEnd: 10.000000
+OutputTimeBegin: 0.000000
+OutputTimeStepSize: 1.000000e-02
+SimulationMinTimeStep: 1.000000e-14
+SimulationMaxTimeStep: 1.000000e-03
+isExactOutputTimeEnforced: 1
+WriteConstraintForceResultFile: 0
+WriteForceResultFile: 0
+WriteStateResultFile: 0
+WriteVelocityResultFile: 0
+WriteAccelerationResultFile: 0
+WriteExtConstraintLagrangeResultFile: 0
+WriteMeasureResultFile: 0
+DebugLevel: 0
+DebugTimeBegin: 0.000000
+DebugTimeEnd: 10.000000
+useSimTimeInterval: 1
+IsInitialPositionFromFileUsed:  0
+IsInitialVelocityFromFileUsed:  0
+Alpha: -0.300000
+MaxNumberOfInnerIterations: 10, 0
+GlobalErrorTolerance: 1.000000e-05
+ModifyNewmark: 0
+MaxNumOfTimeStepsUsingSameFactorizedJacobian: 0
+UsePardisoScalingAndMatching: 0
+
+$SETTINGS:
+background color: 255 255 255   255
+bounding mode: 0
+COG marker scale: 1.000000
+constraint icon scale: 1.000000
+force icon scale: 25.000000
+gravity_vector: 0.000, -9.810, 0.000
+End of activation period: 0.000000
+
