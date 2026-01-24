@@ -23,10 +23,15 @@ from PyQt6.QtWidgets import (
 
 # Importieren für Freedyn
 import os as myos
-import sys
 import numpy as np
 from ctypes import *
 import matplotlib.pyplot as plt
+
+from matplotlib.backends.backend_qtagg import FigureCanvas
+from matplotlib.backends.backend_qtagg import \
+    NavigationToolbar2QT as NavigationToolbar
+from matplotlib.backends.qt_compat import QtWidgets
+from matplotlib.figure import Figure
 
 sys.path.insert(0, 'C:\\Users\\olive\\OneDrive\\Dokumente\\Freedyn\\FreeDynAPI_2024.9\\FreeDynAPI\\fdApi')
 import fdApi
@@ -43,8 +48,8 @@ class USolverViewer(QMainWindow):
         self.setCentralWidget(central_widget)
         
         # Create main layout
-        main_layout = QHBoxLayout()
-        central_widget.setLayout(main_layout)
+        self.main_layout = QHBoxLayout()
+        central_widget.setLayout(self.main_layout)
         
         # Create menu bar
         self.create_menus()
@@ -54,11 +59,22 @@ class USolverViewer(QMainWindow):
 
         # Create control panel
         controls = self.create_controls()
-        main_layout.addWidget(controls)
+        self.main_layout.addWidget(controls)
 
         # PyVista plotter (move existing plotter code here)
-        self.plotter = QtInteractor(central_widget)
-        main_layout.addWidget(self.plotter.interactor, stretch=3)  # Give more space to 3D view
+        # self.plotter = QtInteractor(central_widget)
+        # main_layout.addWidget(self.plotter.interactor, stretch=3)  # Give more space
+
+        # -------------------------------------------------------------------------
+        # # Test von https://matplotlib.org/stable/gallery/user_interfaces/embedding_in_qt_sgskip.html
+        # static_canvas = FigureCanvas(Figure(figsize=(5, 3)))
+        # # Ideally one would use self.addToolBar here, but it is slightly
+        # # incompatible between PyQt6 and other bindings, so we just add the
+        # # toolbar as a plain widget instead.
+        # main_layout.addWidget(NavigationToolbar(static_canvas, self))
+        # main_layout.addWidget(static_canvas)
+
+        # ---------------------------------------------------------------------------
 
         # Create menus and status bar
         self.create_menus()
@@ -107,13 +123,28 @@ class USolverViewer(QMainWindow):
         try:
             # Load Filefds
             self.filefds = filename
-                    
+             
             # Update status
             self.statusBar().showMessage(f"Loaded: {filename}", 3000)
             
             # Update window title
             import os
             self.setWindowTitle(f"Übertragungsfunktion für - {os.path.basename(filename)}")
+
+            ## define directories for Simulation
+            #define path of example FreeDyn Input file (FDS)
+            self.fdsFilePath = myos.path.abspath(myos.path.join(myos.path.dirname(myos.path.abspath(__file__)), self.filefds))
+
+            ## initialize FreeDyn API
+            fdApi.init()
+
+            ## create model by passing path to model file (.fds)
+            self.modelIndex = fdApi.createModel(self.fdsFilePath,'no')
+            if(self.modelIndex < 0):
+                sys.exit()
+
+            # Update info
+            self.update_info()
             
         except Exception as e:
             self.statusBar().showMessage(f"Error loading file: {str(e)}", 5000)
@@ -130,32 +161,8 @@ class USolverViewer(QMainWindow):
         # ---------------------------------------------------------------------------------------------
         # Berechnung anhand Demo 1:
 
-        ## define directories
-        #define path of example FreeDyn Input file (FDS)
-        fdsFilePath = myos.path.abspath(myos.path.join(myos.path.dirname(myos.path.abspath(__file__)), self.filefds))
-
-        ## initialize FreeDyn API
-        fdApi.init()
-
-        ## create model by passing path to model file (.fds)
-        modelIndex = fdApi.createModel(fdsFilePath,'no')
-        if(modelIndex < 0):
-            sys.exit()
-
         ## set model as active (so that there is no need for passing modelIndex in future calls)
-        fdApi.setModelAsActive(modelIndex)
-
-        ## get model infos
-        modelInfos = fdApi.getModelInfos()
-        print("model infos:")
-        print("\tnumAllDofs: "   + str(modelInfos["numAllDofs"]))
-        print("\tnumPhyDofs: "   + str(modelInfos["numPhyDofs"]))
-        print("\tnumIntDof: "    + str(modelInfos["numIntDof"]))
-        print("\tnumExtDof: "    + str(modelInfos["numExtDof"]))
-        print("\tnumBodies: "    + str(modelInfos["numBodies"]))
-        print("\tnumExtConstr: " + str(modelInfos["numExtConstr"]))
-        print("\tnumForces: "    + str(modelInfos["numForces"]))
-        print("\tnumMeasures: "  + str(modelInfos["numMeasures"]))
+        fdApi.setModelAsActive(self.modelIndex)
 
         ## start simulation (simulation and solver settings according to .fds file)
         solveEomSuc = fdApi.solveEoM()
@@ -175,37 +182,43 @@ class USolverViewer(QMainWindow):
             time[i,0] = fdApi.getStatesAtTimeIndex(i,states["Q"])
             yCoord[i,0] = states["Q"][1,0]
 
-        ## plot results
-        plt.ion()
-        plt.plot(time, yCoord)
-        plt.xlabel('time [s]')
-        plt.ylabel('displacement [m]')
-        plt.grid(True)
-        plt.show()
+        self.time = time
+        self.yCoord = yCoord
 
-        ## read and plot measure "mea_y"
-        vMeasures = fdApi.generateMeasureVector()
+        # Display results (will be refined in next step)
+        self.display_results()
 
-        measureNames = fdApi.getMeasureNames()
-        meaIndex = measureNames.index("mea_y")
-        yCoord = np.zeros((nTimeSteps,1))
-        for i in range(nTimeSteps):
-            fdApi.getMeasuresAtTimeIndex(i, vMeasures)
-            yCoord[i,0] = vMeasures[meaIndex,0]
+        # ## plot results
+        # plt.ion()
+        # plt.plot(time, yCoord)
+        # plt.xlabel('time [s]')
+        # plt.ylabel('displacement [m]')
+        # plt.grid(True)
+        # plt.show()
 
-        ## plot results
-        plt.plot(time, yCoord)
-        plt.xlabel('time [s]')
-        plt.ylabel('displacement [m]')
-        plt.grid(True)
-        plt.show()
+        # ## read and plot measure "mea_y"
+        # vMeasures = fdApi.generateMeasureVector()
 
-        ## delete model after last interaction
-        fdApi.deleteModel(modelIndex)
+        # measureNames = fdApi.getMeasureNames()
+        # meaIndex = measureNames.index("mea_y")
+        # yCoord = np.zeros((nTimeSteps,1))
+        # for i in range(nTimeSteps):
+        #     fdApi.getMeasuresAtTimeIndex(i, vMeasures)
+        #     yCoord[i,0] = vMeasures[meaIndex,0]
 
-        # Keep the plot open at the end
-        plt.ioff()
-        plt.show()
+        # ## plot results
+        # plt.plot(time, yCoord)
+        # plt.xlabel('time [s]')
+        # plt.ylabel('displacement [m]')
+        # plt.grid(True)
+        # plt.show()
+
+        # ## delete model after last interaction
+        # fdApi.deleteModel(modelIndex)
+
+        # # Keep the plot open at the end
+        # plt.ioff()
+        # plt.show()
 
 # -----------------------------------------------------------------------------------------------------
     # Control Panel
@@ -225,6 +238,12 @@ class USolverViewer(QMainWindow):
         reset_button.clicked.connect(self.Run_Calculation)
         layout.addWidget(reset_button)
         
+        # Simulation info
+        layout.addWidget(QLabel("\nSimulation Information:"))
+        self.info_label = QLabel("No Simulation loaded")
+        self.info_label.setWordWrap(True)
+        layout.addWidget(self.info_label)
+
         # Push controls to top
         layout.addStretch()
         
@@ -236,11 +255,63 @@ class USolverViewer(QMainWindow):
     # handler methods:
     def update_field_display(self, field_name):
         """Update display when field selection changes"""
-        self.display_mesh()
+        self.display_results()
 
     def update_display_options(self):
         """Update display when checkboxes change"""
-        self.display_mesh()
+        self.display_results()
+    
+# -----------------------------------------------------------------------------------------------------
+    # Infos:
+    def update_info(self):
+        """Update Simulation information display"""
+        if self.filefds is None:
+            self.info_label.setText("No filefds loaded")
+            return
+        
+        ## initialize FreeDyn API
+        fdApi.init()
+
+        ## get model infos
+        modelInfos = fdApi.getModelInfos()
+    
+        info_text = (
+            f"numAllDofs: {str(modelInfos["numAllDofs"])}\n"
+            f"numPhyDofs: {str(modelInfos["numPhyDofs"])}\n"
+            f"numIntDof: {str(modelInfos["numIntDof"])}\n"
+            f"numExtDof: {str(modelInfos["numExtDof"])}\n"
+            f"numBodies: {str(modelInfos["numBodies"])}\n"
+            f"numExtConstr: {str(modelInfos["numExtConstr"])}\n"
+            f"numForces: {str(modelInfos["numForces"])}\n"
+            f"numMeasures: {str(modelInfos["numMeasures"])}\n"
+        )
+        
+        self.info_label.setText(info_text)
+# -----------------------------------------------------------------------------------------------------
+    # Display results:
+    def display_results(self):
+        """Display results with current settings"""
+        if self.filefds is None:
+            return
+        
+        self.plotter.clear()
+        
+        # Get current field selection
+        field_name = self.field_combo.currentText()
+        
+        ## plot results
+        plt.ion()
+        plt.plot(self.time, self.yCoord)
+        plt.xlabel('time [s]')
+        plt.ylabel('displacement [m]')
+        plt.grid(True)
+        #plt.show()
+
+        #self.plotter.addWidget(plt.gcf())
+        canvas = FigureCanvas(plt.gcf())
+        self.main_layout.addWidget(canvas)
+
+        self.plotter.reset_camera()
 # -----------------------------------------------------------------------------------------------------
 def main():
     app = QApplication(sys.argv)
