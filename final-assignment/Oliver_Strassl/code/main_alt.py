@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
 import sys
-from pyvistaqt import QtInteractor
+#from pyvistaqt import QtInteractor #nicht benötigt!!
 import pyvista as pv
 from PyQt6.QtWidgets import QFileDialog
 

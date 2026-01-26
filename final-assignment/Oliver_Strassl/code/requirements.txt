@@ -1,3 +1,12 @@
-FreeDynAPI
-	Download: FreeDynAPI_2024.9
-	In Zeile8 den Pfad für Demo1 einfügen.
+# FreeDynAPI
+#	Download: FreeDynAPI_2024.9
+#	In Zeile 373 FreeDynGUI Adresse einfügen.
+# Activate (Windows): .venv\Scripts\activate
+# pip install -r requirements.txt
+
+numpy
+pandas
+matplotlib
+PyQt6
+pyvista
+vtk
