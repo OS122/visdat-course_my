@@ -86,8 +86,8 @@ EndForce
 DataObject Spline_1D
 	 Label  = Anregung
 	 VisualizationID = 1
-	 PathToSplineData = C:\GITHUP_PC3\visdat-course_my\final-assignment\Oliver_Strassl\code\data_2\Kraft.txt
-	 NumberOfHeaderLines = 0
+	 PathToSplineData = C:\GITHUP_PC\visdat-course_my\final-assignment\Oliver_Strassl\code\data_2\Kraft.txt
+	 NumberOfHeaderLines = 1
 	 ColumnXData = 0
 	 ColumnYData = 1
 EndDataObject

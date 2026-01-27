@@ -54,8 +54,8 @@ ForceExpression: AKISPL[SIMTIME[],Anregung]
 
 $DATAOBJECT_SPLINE_1D:
 name: Anregung
-PathToSplineData: C:\GITHUP_PC3\visdat-course_my\final-assignment\Oliver_Strassl\code\data_2\Kraft.txt
-NumberOfHeaderLines: 0
+PathToSplineData: C:\GITHUP_PC\visdat-course_my\final-assignment\Oliver_Strassl\code\data_2\Kraft.txt
+NumberOfHeaderLines: 1
 ColumnXData: 1
 ColumnYData: 2
 

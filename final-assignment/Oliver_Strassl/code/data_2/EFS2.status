@@ -2,7 +2,7 @@
 FREEDYN General data 
 *************************************
 FREEDYN Version 2024.09 
-Mon Jan 26 12:41:09 2026
+Tue Jan 27 20:22:21 2026
 
 Homepage: www.freedyn.at
 Suggestions, bug reports: bugs@freedyn.at 
@@ -47,8 +47,8 @@ Computation has been successfully finished :-)
 *************************************
 Summary of computation 
 *************************************
-Total number of corrector updates   = 13307
+Total number of corrector updates   = 13514
 
-Needed CPU time = 1.122000
+Needed CPU time = 0.777000
 *************************************
 

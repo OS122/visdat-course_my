@@ -9,7 +9,7 @@ import subprocess
 # Importieren der externen Pakete
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qtagg import (FigureCanvasQTAgg, NavigationToolbar2QT)
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget,
     QVBoxLayout, QHBoxLayout, QFileDialog,
@@ -60,12 +60,26 @@ class Fenster(QMainWindow):
 
         # ------------------------------------------------------------
         # Grafikbereich (Rechts)
+        plot_widget = QWidget()
+        plot_layout = QVBoxLayout(plot_widget)
+        plot_layout.setContentsMargins(0, 0, 0, 0)
+        plot_layout.setSpacing(5)
+
+        # Figure
         self.fig, self.ax = plt.subplots()
         self.ax.set_title("Warten auf Daten...")
         self.ax.grid(True)
 
-        self.canvas = FigureCanvas(self.fig)
-        main_layout.addWidget(self.canvas, 4)
+        self.canvas = FigureCanvasQTAgg(self.fig)
+        plot_layout.addWidget(self.canvas, 1)
+
+        # Toolbar (UNTER dem Plot)
+        self.toolbar = NavigationToolbar2QT(self.canvas, self)
+        plot_layout.addWidget(self.toolbar, 0)
+
+        # Plotbereich zum Hauptlayout hinzufügen
+        main_layout.addWidget(plot_widget, 4)
+
 
     # ------------------------------------------------------------
     def create_menue(self):
@@ -110,12 +124,7 @@ class Fenster(QMainWindow):
                 f"Übertragungsfunktion für - {os.path.basename(filename)}"
             )
 
-            self.fdsFilePath = os.path.abspath(
-                os.path.join(
-                    os.path.dirname(os.path.abspath(__file__)),
-                    self.filefds
-                )
-            )
+            self.fdsFilePath = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), self.filefds))
 
         except Exception as e:
             self.statusBar().showMessage(
@@ -174,9 +183,7 @@ class Fenster(QMainWindow):
         self.btn_tf_safe.clicked.connect(self.safe_transfer_function)
         control_layout.addWidget(self.btn_tf_safe)
 
-        
         # Alle Buttons ausblenden
-        self.btn_F_safe.setVisible(False)
         self.btn_sim_run.setVisible(False)
         self.btn_sim_plot.setVisible(False)
         self.btn_tf_calc.setVisible(False)
@@ -238,13 +245,14 @@ class Fenster(QMainWindow):
         self.btn_tf_safe.setVisible(False)
 
         if field_id == 1:
+            # Rauschen
             self.noise_param_group.setVisible(True)
             self.btn_noise_clalc.setVisible(True)
             self.btn_noise_plot.setVisible(True)
+            self.btn_F_safe.setVisible(True)
 
         elif field_id == 2:
             # Simulation
-            self.btn_F_safe.setVisible(True)
             self.btn_sim_run.setVisible(True)
             self.btn_sim_plot.setVisible(True)
 
@@ -307,7 +315,7 @@ class Fenster(QMainWindow):
 
         # ------------------------------------------------------------
         # Plot aktualisieren
-        self.ax.clear()
+        self.reset_figure()
         self.ax.plot(self.t_vec, self.x_noise)
         self.ax.set_xlabel("Zeit [s]")
         self.ax.set_ylabel("Kraft [N]")
@@ -322,7 +330,7 @@ class Fenster(QMainWindow):
         )
 
     # ------------------------------------------------------------
-    def safe_Force_function(self):
+    def safe_Force_function(self,Kraft):
             # ------------------------------------------------------------
             # Sicherheitsprüfung
             if not hasattr(self, "t_vec") or not hasattr(self, "x_noise"):
@@ -333,13 +341,38 @@ class Fenster(QMainWindow):
                 return
 
             # ------------------------------------------------------------
-            # Eingangssignal speichern
-            kraft_pfad = Path(__file__).parent / "data_2" / "Kraft.txt"
-            kraft_pfad.parent.mkdir(exist_ok=True)
+            # Eingangssignal (Kraft) exportieren
+            Kraft = np.column_stack((self.t_vec, self.x_noise))
 
-            np.savetxt(kraft_pfad, np.column_stack((self.t_vec, self.x_noise)))
+            # Vorschlagsverzeichnis
+            default_dir = Path(__file__).parent / "data_2"
+            default_dir.mkdir(exist_ok=True)
 
+            filename, _ = QFileDialog.getSaveFileName(
+                self,  # Parent = Hauptfenster
+                "Exportieren der Kraft-Datei",
+                str(default_dir / "Kraft.txt"),
+                "Textdatei (*.txt)"
+            )
+
+            if not filename:
+                return  # Benutzer hat abgebrochen
+
+            np.savetxt(
+                filename,
+                Kraft,
+                header="Zeit [s]\tKraft [N]",
+                comments=""
+            )
+
+            self.statusBar().showMessage(
+                f"Kraftsignal gespeichert: {filename}",
+                4000
+            )
+
+            # Für Sicherheitsüberprüfung bei der Funktion run_simulation
             self.F_safe = 1
+
             # ------------------------------------------------------------
             self.statusBar().showMessage(
                 "Kraft gespeichert",
@@ -436,7 +469,7 @@ class Fenster(QMainWindow):
 
         # ------------------------------------------------------------
         # Plot aktualisieren (bestehende Achse!)
-        self.ax.clear()
+        self.reset_figure()
         self.ax.plot(self.t_mes, self.y)
         self.ax.set_xlabel("Zeit [s]")
         self.ax.set_ylabel("Auslenkung [mm]")
@@ -532,10 +565,12 @@ class Fenster(QMainWindow):
 
         # ------------------------------------------------------------
         # Plot vorbereiten
-        self.fig.clear()
+        # Figure zurücksetzen (aber NICHT neu erstellen!)
+        self.reset_figure()
 
         ax1 = self.fig.add_subplot(2, 1, 1)
         ax1.plot(self.f_vec, np.abs(self.H))
+        ax1.set_xlabel("Frequenz")
         ax1.set_ylabel("|H(f)|")
         ax1.set_title("Übertragungsfunktion")
         ax1.grid(True)
@@ -556,6 +591,7 @@ class Fenster(QMainWindow):
         )
     
     # ------------------------------------------------------------
+    # Definition Funktion Übertragungsfunktion speichern
     def safe_transfer_function(self):
             # ------------------------------------------------------------
             # Sicherheitsprüfung
@@ -567,12 +603,33 @@ class Fenster(QMainWindow):
                 return
 
             # ------------------------------------------------------------
-            # Speichern der Übertragungsfunktion
-            hpfad = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),"data_2","Uebertragungsfunktion.txt"))
+            # Übertragungsfunktion exportieren
+            h = np.column_stack((self.t_mes[: len(self.h)], self.h.real))
+
+            # Vorschlagsverzeichnis
+            default_dir = Path(__file__).parent / "data_2"
+            default_dir.mkdir(exist_ok=True)
+
+            filename, _ = QFileDialog.getSaveFileName(
+                self,  # Parent = Hauptfenster
+                "Exportieren der Uebertragungsfunktion",
+                str(default_dir / "Uebertragungsfunktion.txt"),
+                "Textdatei (*.txt)"
+            )
+
+            if not filename:
+                return  # Benutzer hat abgebrochen
+
             np.savetxt(
-                hpfad,
-                np.column_stack((self.t_mes[: len(self.h)], self.h.real)),
-                header="Zeit [s]\tImpulsantwort",
+                filename,
+                h,
+                header="Zeit [s]\tKraft [N]",
+                comments=""
+            )
+
+            self.statusBar().showMessage(
+                f"Kraftsignal gespeichert: {filename}",
+                4000
             )
 
             # ------------------------------------------------------------
@@ -581,6 +638,11 @@ class Fenster(QMainWindow):
                 3000
             )
 
+    # ------------------------------------------------------------
+    # Definition Funktion Figure zurücksetzen
+    def reset_figure(self):
+        self.fig.clear()
+        self.ax = self.fig.add_subplot(111)
     # ------------------------------------------------------------
 
 if __name__ == "__main__":

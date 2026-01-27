@@ -1,6 +1,12 @@
-# Importieren von Packeten
+# ------------------------------------------------------------
+# Importieren der Standardbibliotheken
 import sys
 import os
+from pathlib import Path
+import subprocess
+
+# ------------------------------------------------------------
+# Importieren der externen Pakete
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
@@ -11,10 +17,9 @@ from PyQt6.QtWidgets import (
     QGroupBox, QComboBox
 )
 from PyQt6.QtGui import QAction
-import subprocess
-from pathlib import Path
 
-# Eigene Module Laden
+# ------------------------------------------------------------
+# Importieren der eigene Module
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),'src')))
 import Module as M
 
@@ -88,35 +93,40 @@ class Fenster(QMainWindow):
         file_menu.addAction(exit_action)
     
     # ------------------------------------------------------------
+    # Definition der Funktion Datei öfnnen
     def open_file(self):
-            """Öffnet die fds-Datei über den Dateidialog."""
-            filename, _ = QFileDialog.getOpenFileName(
-                self,
-                "Auswählen Freedyn Simulations Datei", 
-                os.path.join(os.path.dirname(__file__), "data_2"),
-                "VTK Files (*.fds);;All Files (*.*)"
-            )
-            
-            if not filename:
-                return  # Benützer beendet
-            
-            try:
-                # Lade Filefds
-                self.filefds = filename
-                
-                # Update status
-                self.statusBar().showMessage(f"Ladet: {filename}", 3000)
-                
-                # Update Fenster Titel
-                import os
-                self.setWindowTitle(f"Übertragungsfunktion für - {os.path.basename(filename)}")
+        """Öffnet die fds-Datei über den Dateidialog."""
+        filename, _ = QFileDialog.getOpenFileName(
+            self,
+            "Auswählen Freedyn Simulations Datei", 
+            os.path.join(os.path.dirname(__file__), "data_2"),
+            "VTK Files (*.fds);;All Files (*.*)"
+        )
+        
+        if not filename:
+            return
+        
+        try:
+            self.filefds = filename
 
-                ## Verzeichnisse für die Simulation definieren
-                # Pfad der Beispiel-FreeDyn-Eingabedatei (FDS) definieren
-                self.fdsFilePath = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), self.filefds))
-                
-            except Exception as e:
-                self.statusBar().showMessage(f"Error Laden Datei: {str(e)}", 5000)
+            self.statusBar().showMessage(f"Ladet: {filename}", 3000)
+
+            self.setWindowTitle(
+                f"Übertragungsfunktion für - {os.path.basename(filename)}"
+            )
+
+            self.fdsFilePath = os.path.abspath(
+                os.path.join(
+                    os.path.dirname(os.path.abspath(__file__)),
+                    self.filefds
+                )
+            )
+
+        except Exception as e:
+            self.statusBar().showMessage(
+                f"Error Laden Datei: {str(e)}", 5000
+            )
+
     
     # ------------------------------------------------------------
     # Bedienfeld_Erstellen
@@ -137,9 +147,13 @@ class Fenster(QMainWindow):
 
         # --------------------------------------------
         # Tasten – einmal erzeugen
-        self.btn_noise = QPushButton("Rauschen darstellen")
-        self.btn_noise.clicked.connect(self.show_noise)
-        control_layout.addWidget(self.btn_noise)
+        self.btn_noise_clalc = QPushButton("Rauschen erzeugen")
+        self.btn_noise_clalc.clicked.connect(self.generate_noise)
+        control_layout.addWidget(self.btn_noise_clalc)
+
+        self.btn_noise_plot = QPushButton("Rauschen darstellen")
+        self.btn_noise_plot.clicked.connect(self.plot_noise)
+        control_layout.addWidget(self.btn_noise_plot)
 
         self.btn_sim_run = QPushButton("Simulation durchführen")
         self.btn_sim_run.clicked.connect(self.run_simulation)
@@ -157,11 +171,17 @@ class Fenster(QMainWindow):
         self.btn_tf_plot.clicked.connect(self.plot_transfer_function)
         control_layout.addWidget(self.btn_tf_plot)
 
+        self.btn_tf_safe = QPushButton("Übertragungsfunktion speichern")
+        self.btn_tf_safe.clicked.connect(self.safe_transfer_function)
+        control_layout.addWidget(self.btn_tf_safe)
+
+        
         # Alle Buttons ausblenden
         self.btn_sim_run.setVisible(False)
         self.btn_sim_plot.setVisible(False)
         self.btn_tf_calc.setVisible(False)
         self.btn_tf_plot.setVisible(False)
+        self.btn_tf_safe.setVisible(False)
 
         # --------------------------------------------
         # Parameter Gruppe – Rauschen
@@ -208,15 +228,18 @@ class Fenster(QMainWindow):
         self.noise_param_group.setVisible(False)
 
         # Alle Buttons ausblenden
-        self.btn_noise.setVisible(False)
+        self.btn_noise_clalc.setVisible(False)
+        self.btn_noise_plot.setVisible(False)
         self.btn_sim_run.setVisible(False)
         self.btn_sim_plot.setVisible(False)
         self.btn_tf_calc.setVisible(False)
         self.btn_tf_plot.setVisible(False)
+        self.btn_tf_safe.setVisible(False)
 
         if field_id == 1:
             self.noise_param_group.setVisible(True)
-            self.btn_noise.setVisible(True)
+            self.btn_noise_clalc.setVisible(True)
+            self.btn_noise_plot.setVisible(True)
 
         elif field_id == 2:
             # Simulation
@@ -227,14 +250,15 @@ class Fenster(QMainWindow):
             # Übertragungsfunktion
             self.btn_tf_calc.setVisible(True)
             self.btn_tf_plot.setVisible(True)
+            self.btn_tf_safe.setVisible(True)
 
     
     # ------------------------------------------------------------
-    # Definition Funktion Rauschen darstellen
-    def show_noise(self):
+    # Definition Funktion Rauschen erzeugen
+    def generate_noise(self):
         try:
             # ------------------------------------------------------------
-            # Parameter aus GUI lesen
+            # Parameter (aus Eingabefeldern oder Defaults)
             fs = float(self.input_fs.text())
             T1 = float(self.input_T1.text())
             T2 = float(self.input_T2.text())
@@ -242,39 +266,61 @@ class Fenster(QMainWindow):
             dt = float(self.input_dt.text())
 
             # ------------------------------------------------------------
-            # Zeitvektor erzeugen
+            # Zeitvektor
             t_vec = np.arange(0.0, 10.0 + dt, dt)
-            self.dim = len(t_vec)
+            dim = len(t_vec)
 
             # ------------------------------------------------------------
-            # Erzeugen des rosa Rauschsignals
+            # Rauschen erzeugen
             x_noise = M.pink_noise_time_signal(fs, t_vec, T1, T2, T3)
 
             # ------------------------------------------------------------
-            # Plot aktualisieren (bestehende Achse!)
-            self.ax.clear()
-            self.ax.plot(t_vec, x_noise)
-            self.ax.set_xlabel("Zeit [s]")
-            self.ax.set_ylabel("Kraft [N]")
-            self.ax.set_title("Eingangssignal (Rosa Rauschen)")
-            self.ax.grid(True)
+            # Als Klassenattribute speichern
+            self.dt = dt
+            self.t_vec = t_vec
+            self.x_noise = x_noise
+            self.dim = dim
 
-            self.canvas.draw()
-
-            # ------------------------------------------------------------
-            # Statusmeldung
             self.statusBar().showMessage(
-                "Rauschsignal erfolgreich erzeugt und dargestellt",
-                4000
+                "Rauschsignal erfolgreich erzeugt",
+                3000
             )
 
-        except ValueError:
+        except Exception as e:
             self.statusBar().showMessage(
-                "Fehler: Ungültige numerische Eingabe bei Rauschparametern",
+                f"Fehler bei Rauscherzeugung: {str(e)}",
+                6000
+            )
+    # ------------------------------------------------------------
+    # Definition Funktion Rauschen darstellen
+    def plot_noise(self):
+        # ------------------------------------------------------------
+        # Sicherheitsprüfung
+        if not hasattr(self, "t_vec") or not hasattr(self, "x_noise"):
+            self.statusBar().showMessage(
+                "Fehler: Kein Rauschsignal vorhanden",
                 5000
             )
+            return
+
+        # ------------------------------------------------------------
+        # Plot aktualisieren
+        self.ax.clear()
+        self.ax.plot(self.t_vec, self.x_noise)
+        self.ax.set_xlabel("Zeit [s]")
+        self.ax.set_ylabel("Kraft [N]")
+        self.ax.set_title("Eingangssignal – Rosa Rauschen")
+        self.ax.grid(True)
+
+        self.canvas.draw()
+
+        self.statusBar().showMessage(
+            "Rauschsignal dargestellt",
+            3000
+        )
 
     # ------------------------------------------------------------
+    # Definition Funktion Simulation durchführen
     def run_simulation(self):
         try:
             # ------------------------------------------------------------
@@ -292,10 +338,6 @@ class Fenster(QMainWindow):
                     5000
                 )
                 return
-
-            # ------------------------------------------------------------
-            # 2) FFT des Eingangssignals
-            X = (1.0 / self.dim) * np.fft.fft(self.x_noise)
 
             # ------------------------------------------------------------
             # Eingangssignal speichern
@@ -364,22 +406,165 @@ class Fenster(QMainWindow):
             )
 
     # ------------------------------------------------------------
+    # Definition Funktion Simulation darstellen
     def plot_simulation(self):
-        self.statusBar().showMessage("Simulation Grafik", 3000)
-        print("Simulation Grafik darstellen")
+        # ------------------------------------------------------------
+        # Sicherheitsprüfung
+        if not hasattr(self, "t_mes") or not hasattr(self, "y"):
+            self.statusBar().showMessage(
+                "Fehler: Keine Simulationsdaten vorhanden",
+                5000
+            )
+            return
+
+        # ------------------------------------------------------------
+        # Plot aktualisieren (bestehende Achse!)
+        self.ax.clear()
+        self.ax.plot(self.t_mes, self.y)
+        self.ax.set_xlabel("Zeit [s]")
+        self.ax.set_ylabel("Auslenkung [mm]")
+        self.ax.set_title("Simulationsergebnis (FreeDyn)")
+        self.ax.grid(True)
+
+        self.canvas.draw()
+
+        # ------------------------------------------------------------
+        self.statusBar().showMessage(
+            "Simulationsergebnis dargestellt",
+            3000
+        )
 
     # ------------------------------------------------------------
+    # Definition Funktion Übertragungsfunktion berechnen
     def calc_transfer_function(self):
-        self.statusBar().showMessage("Übertragungsfunktion berechnen", 3000)
-        print("Übertragungsfunktion berechnen")
+        try:
+            # ------------------------------------------------------------
+            # Sicherheitsprüfungen
+            if not hasattr(self, "x_noise"):
+                self.statusBar().showMessage(
+                    "Fehler: Eingangssignal x_noise nicht vorhanden",
+                    5000
+                )
+                return
+
+            if not hasattr(self, "y"):
+                self.statusBar().showMessage(
+                    "Fehler: Kein Ausgangssignal vorhanden",
+                    5000
+                )
+                return
+
+            # ------------------------------------------------------------
+            # Dimension absichern
+            dim = min(len(self.x_noise), len(self.y))
+
+            x = self.x_noise[:dim]
+            y = self.y[:dim]
+
+            # ------------------------------------------------------------
+            # FFT Eingang / Ausgang
+            X = (1.0 / dim) * np.fft.fft(x)
+            Y = (1.0 / dim) * np.fft.fft(y)
+
+            # ------------------------------------------------------------
+            # Übertragungsfunktion
+            H = np.zeros(dim, dtype=complex)
+
+            for i in range(dim):
+                if X[i] != 0:
+                    H[i] = Y[i] / X[i]
+
+            # Frequenzachse
+            f_vec = np.arange(0.0, dim * self.dt, self.dt)
+
+            # ------------------------------------------------------------
+            # Impulsantwort
+            h = dim * np.fft.ifft(H)
+
+            # ------------------------------------------------------------
+            # Als Klassenattribute speichern
+            self.X = X
+            self.Y = Y
+            self.H = H
+            self.h = h
+            self.f_vec = f_vec
+            self.dim = dim
+
+            self.statusBar().showMessage(
+                "Übertragungsfunktion erfolgreich berechnet",
+                4000
+            )
+
+        except Exception as e:
+            self.statusBar().showMessage(
+                f"Fehler bei Übertragungsfunktion: {str(e)}",
+                6000
+            )
 
     # ------------------------------------------------------------
+    # Definition Funktion Übertragungsfunktion darstellen
     def plot_transfer_function(self):
-        self.statusBar().showMessage("Übertragungsfunktion darstellen", 3000)
-        print("Übertragungsfunktion darstellen")
+        # ------------------------------------------------------------
+        # Sicherheitsprüfung
+        if not hasattr(self, "H") or not hasattr(self, "h"):
+            self.statusBar().showMessage(
+                "Fehler: Übertragungsfunktion noch nicht berechnet",
+                5000
+            )
+            return
+
+        # ------------------------------------------------------------
+        # Plot vorbereiten
+        self.fig.clear()
+
+        ax1 = self.fig.add_subplot(2, 1, 1)
+        ax1.plot(self.f_vec, np.abs(self.H))
+        ax1.set_ylabel("|H(f)|")
+        ax1.set_title("Übertragungsfunktion")
+        ax1.grid(True)
+
+        ax2 = self.fig.add_subplot(2, 1, 2)
+        ax2.plot(self.t_mes[: len(self.h)], self.h.real)
+        ax2.set_xlabel("Zeit [s]")
+        ax2.set_ylabel("h(t)")
+        ax2.grid(True)
+
+        self.fig.tight_layout()
+        self.canvas.draw()
+
+        # ------------------------------------------------------------
+        self.statusBar().showMessage(
+            "Übertragungsfunktion dargestellt",
+            3000
+        )
     
     # ------------------------------------------------------------
+    def safe_transfer_function(self):
+            # ------------------------------------------------------------
+            # Sicherheitsprüfung
+            if not hasattr(self, "t_mes") or not hasattr(self, "h"):
+                self.statusBar().showMessage(
+                    "Fehler: Übertragungsfunktion noch nicht berechnet",
+                    5000
+                )
+                return
 
+            # ------------------------------------------------------------
+            # Speichern der Übertragungsfunktion
+            hpfad = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),"data_2","Uebertragungsfunktion.txt"))
+            np.savetxt(
+                hpfad,
+                np.column_stack((self.t_mes[: len(self.h)], self.h.real)),
+                header="Zeit [s]\tImpulsantwort",
+            )
+
+            # ------------------------------------------------------------
+            self.statusBar().showMessage(
+                "Übertragungsfunktion gespeichert",
+                3000
+            )
+
+    # ------------------------------------------------------------
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
