@@ -36,7 +36,8 @@ class Fenster(QMainWindow):
             "T1": 0.1,
             "T2": 7.0,
             "T3": 8.0,
-            "dt": 0.01
+            "dt": 0.01,
+            "tg": 10
         }
 
         # ------------------------------------------------------------
@@ -156,7 +157,7 @@ class Fenster(QMainWindow):
         self.noise_param_group.setLayout(param_layout)
 
         self.input_fs = QLineEdit(str(self.noise_params["fs"]))
-        param_layout.addWidget(QLabel("Abtastfrequenz fs [Hz]"))
+        param_layout.addWidget(QLabel("Abtastfrequenz fs [Hz] (für Rauscherzeugung)"))
         param_layout.addWidget(self.input_fs)
 
         self.input_T1 = QLineEdit(str(self.noise_params["T1"]))
@@ -172,8 +173,12 @@ class Fenster(QMainWindow):
         param_layout.addWidget(self.input_T3)
 
         self.input_dt = QLineEdit(str(self.noise_params["dt"]))
-        param_layout.addWidget(QLabel("Zeitschritt dt [s]"))
+        param_layout.addWidget(QLabel("Zeitschritt dt [s] (für Zeitvektor)"))
         param_layout.addWidget(self.input_dt)
+
+        self.input_tg = QLineEdit(str(self.noise_params["tg"]))
+        param_layout.addWidget(QLabel("Simulationszeit tg [s]"))
+        param_layout.addWidget(self.input_tg)
 
         control_layout.addWidget(self.noise_param_group)
 
@@ -188,7 +193,7 @@ class Fenster(QMainWindow):
         control_layout.addWidget(self.btn_noise_plot)
 
         self.btn_F_safe = QPushButton("Rauschsignal exportieren")
-        self.btn_F_safe.clicked.connect(self.safe_Force_function)
+        self.btn_F_safe.clicked.connect(self.safe_Rauschsignal)
         control_layout.addWidget(self.btn_F_safe)
 
         self.btn_sim_run = QPushButton("Simulation durchführen")
@@ -274,10 +279,11 @@ class Fenster(QMainWindow):
             T2 = float(self.input_T2.text())
             T3 = float(self.input_T3.text())
             dt = float(self.input_dt.text())
+            tg= float(self.input_tg.text())
 
             # ------------------------------------------------------------
             # Zeitvektor
-            t_vec = np.arange(0.0, 10.0 + dt, dt)
+            t_vec = np.arange(0.0, tg + dt, dt)
             dim = len(t_vec)
 
             # ------------------------------------------------------------
@@ -330,7 +336,8 @@ class Fenster(QMainWindow):
         )
 
     # ------------------------------------------------------------
-    def safe_Force_function(self,Kraft):
+    # Definition Funktion Rauschsignal exportieren
+    def safe_Rauschsignal(self,Kraft):
             # ------------------------------------------------------------
             # Sicherheitsprüfung
             if not hasattr(self, "t_vec") or not hasattr(self, "x_noise"):

@@ -11,47 +11,71 @@ Visualisierung und Datenverarbeitung – Abschlussprojekt
 ---
 
 ## Problem / Motivation
-- Welches Problem lösen Sie?
-- Warum ist das nützlich?
+
+- Erzeugen eines Signals Rosa Rauschen
+- Berechnung der Übertragungsfunktion
+- Kein Reales Model, sondern Freedyn
+- viele Anwendungen für Übertragungsfunktion (z.B. Prüfstands Technik, Inverse Kinematik, Regelungstechnik, ....)
 
 ---
 
 ## Ansatz
-- Überblick über Ihre Lösung
-- Verwendete Schlüsseltechnologien
+- Programm: Visual-Studio-Code
+- Programmiersprache: Python
+- Python-Bibliotheken siehe README
+- Aufteilung in drei Blöcke
+    - Rauschen erzeugen
+    - Simulation
+    - Übertragungsfunktion berechnen
 
 ---
 
-## Highlights der Umsetzung
-- Interessante Details zu Code/Algorithmen
-- Screenshots Ihrer Anwendung
+## Screenshots der Anwendung
+Rauschesignal erzeugen:
+<img src="code/assets/Rauschen_Fenster.png" alt="Fenster" width="900">
+
+---
+
+## Screenshots der Anwendung
+Simulation:
+<img src="code/assets/Rauschen_Fenster.png" alt="Fenster" width="900">
+
+---
+
+## Screenshots der Anwendung
+Übertragungsfunktion:
+<img src="code/assets/Rauschen_Fenster.png" alt="Fenster" width="900">
 
 ---
 
 ## Demo
-Live-Demonstration oder Video/GIF
+Live-Demonstration
 
 ---
 
 ## Ergebnisse
-- Was funktioniert gut?
-- Leistungskennzahlen (falls zutreffend)
+- Rauschsignal wird erzeugt und richtig exportiert
+- Freedyn Simulation wird durchgeführt.
+- Übertragungsfunktion wird erzeugt und exportiert
 
 ---
 
 ## Herausforderungen und Lösungen
-- Was war schwierig?
-- Wie haben Sie diese Schwierigkeiten überwunden?
+- Interaktion mit Freedyn -> Modul API oder command(...)
+- Richtige Fehlerausgabe über das Fenster -> Sicherheitsprüfung
+- Überblick behalten -> Struktur
+- Richtige Befehle -> Foren & ChatGPT
 
 ---
 
 ## Gewonnene Erkenntnisse
-- Was haben Sie aus diesem Projekt gelernt?
-- Welche Fähigkeiten haben Sie entwickelt?
+- Wichtig beim Programmieren
+    - richtige Projekt Planung/Struktur
+    - in Funktionen gliedern
+- Fehlersuche kann durch ChatGPT beschleunigt werden
 
 ---
 
-## Danksagung
+## Vielen Dank für die Aufmerksamkeit
 Fragen?
 
-Übersetzt mit DeepL.com (kostenlose Version)
