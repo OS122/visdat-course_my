@@ -12,7 +12,7 @@ Visualisierung und Datenverarbeitung – Abschlussprojekt
 
 ## Problem / Motivation
 
-- Erzeugen eines Signals Rosa Rauschen
+- Erzeugen eines Verrauschten Signals (Rosa Rauschen)
 - Berechnung der Übertragungsfunktion
 - Kein Reales Model, sondern Freedyn
 - viele Anwendungen für Übertragungsfunktion (z.B. Prüfstands Technik, Inverse Kinematik, Regelungstechnik, ....)

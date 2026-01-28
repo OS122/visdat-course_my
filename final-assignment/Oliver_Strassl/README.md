@@ -6,7 +6,7 @@ sidebar_position: 3
 
 ## Kurzbeschreibung
 Das Programm dient zur Schrittweisen Berechnung einer Übertragungsfunktion von einem Freedyn Model.
-Das Freedyn Model muss 10 sec dauern und darf nur einen Eingang und einen Ausgang haben.
+Das Freedyn Model darf nur einen Eingang und einen Ausgang haben.
 Es gibt viele Anwendungen, wofür Übertragungsfunktion benötigt werden (z.B. Prüfstands Technik, Inverse Kinematik, Regelungstechnik, ....).
 Zusätzlich interessiert mich die Software Freedyn und die Möglichkeit über eine andere Software (z.B. Scilab, Python, ...) mit Freedyn zu arbeiten.
 
