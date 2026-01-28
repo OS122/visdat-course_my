@@ -1,10 +1,10 @@
 $RIGID_BODY:
-name: body
-geometry: Sphere 1.000000
+name: Masse
+geometry: Sphere 5.000000
 position: 0.000000, 0.000000, 0.000000
 x_axis: 1.00000000, 0.00000000, 0.00000000
 y_axis: 0.00000000, 1.00000000, 0.00000000
-z_axis:0.00000000, -0.00000000, 1.00000000
+z_axis:0.00000000, 0.00000000, 1.00000000
 color: 200 200 200   200
 transparency: 50
 initial velocity: 0.000000, 0.000000, 0.000000
@@ -18,11 +18,11 @@ i2_axis: 0.00000000, 1.00000000, 0.00000000
 i3_axis: 0.00000000, 0.00000000, 1.00000000
 
 $CONSTRAINT:
-name: translationalJoint
-body1: body
+name: Lager
+body1: Masse
 body2: GROUND
-dx: 1
-dy: 0
+dx: 0
+dy: 1
 dz: 1
 ax: 1
 ay: 1
@@ -30,52 +30,59 @@ az: 1
 position: 0.000000, 0.000000, 0.000000
 x_axis: 1.00000000, 0.00000000, 0.00000000
 y_axis: 0.00000000, 1.00000000, 0.00000000
-z_axis: 0.00000000, -0.00000000, 1.00000000
+z_axis: 0.00000000, 0.00000000, 1.00000000
 
 $FORCE_GenericForce:
-name: excitation
-body1: body
+name: Feder
+body1: Masse
 body2: GROUND
 PointOfApplication_Body1: 0.000000, 0.000000, 0.000000
 PointOfApplication_Body2: 0.000000, 0.000000, 0.000000
 mode: Space fixed
-direction: 0.000000, 1.000000, 0.000000
-ForceExpression: sin(SIMTIME[])*10.0
+direction: 1.000000, 0.000000, 0.000000
+ForceExpression: -PARVAL[k]*MEAVAL[x]-PARVAL[d]*MEAVAL[v]
 
 $FORCE_GenericForce:
-name: springDamperForce
-body1: body
+name: Kraft
+body1: Masse
 body2: GROUND
 PointOfApplication_Body1: 0.000000, 0.000000, 0.000000
 PointOfApplication_Body2: 0.000000, 0.000000, 0.000000
 mode: Space fixed
-direction: 0.000000, 1.000000, 0.000000
-ForceExpression: -PARVAL[c1]*MEAVAL[mea_y]-PARVAL[d1]*MEAVAL[mea_vy]
+direction: -1.000000, 0.000000, 0.000000
+ForceExpression: AKISPL[SIMTIME[],Anregung]
+
+$DATAOBJECT_SPLINE_1D:
+name: Anregung
+PathToSplineData: C:\GITHUP_PC\visdat-course_my\final-assignment\Oliver_Strassl\code\data\Kraft.txt
+NumberOfHeaderLines: 1
+ColumnXData: 1
+ColumnYData: 2
 
 $DATAOBJECT_PARAMETER:
-name: c1
+name: k
 InitialValue: 1.000000
 
 $DATAOBJECT_PARAMETER:
-name: d1
-InitialValue: 0.100000
+name: d
+InitialValue: 0.005000
 
 $MEASURE:
-name: mea_y
-body1: body
+name: x
+body1: Masse
 body2: GROUND
 type: displacement
-component: 2
+component: 1
 location_body1: 0.000000, 0.000000, 0.000000
 location_body2: 0.000000, 0.000000, 0.000000
 use_initial_value: 1
 
 $MEASURE:
-name: mea_vy
-body1: body
+name: v
+body1: Masse
 body2: GROUND
 type: velocity
-component: 2
+component: 1
 location_body1: 0.000000, 0.000000, 0.000000
 location_body2: 0.000000, 0.000000, 0.000000
 use_initial_value: 1
@@ -86,15 +93,15 @@ SimulationTimeEnd: 10.000000
 OutputTimeBegin: 0.000000
 OutputTimeStepSize: 1.000000e-02
 SimulationMinTimeStep: 1.000000e-14
-SimulationMaxTimeStep: 1.000000e-03
+SimulationMaxTimeStep: 1.000000e+01
 isExactOutputTimeEnforced: 1
 WriteConstraintForceResultFile: 0
 WriteForceResultFile: 0
-WriteStateResultFile: 0
+WriteStateResultFile: 1
 WriteVelocityResultFile: 0
 WriteAccelerationResultFile: 0
 WriteExtConstraintLagrangeResultFile: 0
-WriteMeasureResultFile: 0
+WriteMeasureResultFile: 1
 DebugLevel: 0
 DebugTimeBegin: 0.000000
 DebugTimeEnd: 10.000000
@@ -111,9 +118,9 @@ UsePardisoScalingAndMatching: 0
 $SETTINGS:
 background color: 255 255 255   255
 bounding mode: 0
-COG marker scale: 1.000000
-constraint icon scale: 1.000000
+COG marker scale: 25.000000
+constraint icon scale: 25.000000
 force icon scale: 25.000000
-gravity_vector: 0.000, -9.810, 0.000
+gravity_vector: 0.000, 0.000, 0.000
 End of activation period: 0.000000
 

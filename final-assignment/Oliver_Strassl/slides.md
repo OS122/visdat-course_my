@@ -32,19 +32,19 @@ Visualisierung und Datenverarbeitung – Abschlussprojekt
 
 ## Screenshots der Anwendung
 Rauschesignal erzeugen:
-<img src="code/assets/Rauschen_Fenster.png" alt="Fenster" width="900">
+<img src="code/assets/Rauschen_Fenster.png" alt="Rauschen_Fenster" width="750">
 
 ---
 
 ## Screenshots der Anwendung
 Simulation:
-<img src="code/assets/Rauschen_Fenster.png" alt="Fenster" width="900">
+<img src="code/assets/Simulation_Fenster.png" alt="Simulation_Fenster" width="750">
 
 ---
 
 ## Screenshots der Anwendung
 Übertragungsfunktion:
-<img src="code/assets/Rauschen_Fenster.png" alt="Fenster" width="900">
+<img src="code/assets/Uebertragungsfunktion_Fenster.png" alt="Uebertragungsfunktion_Fenster" width="750">
 
 ---
 

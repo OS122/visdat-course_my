@@ -29,6 +29,7 @@ Das Ausführen der Simulation und das Einlesen der Messung wird ohne dem Modul f
 Dafür wird folgender Befehl verwendet:
 ```bash
 command = [str(free_dyn_exe), str(fds_base) + ".fds"]
+subprocess.run(command, check=False)
 ```
 Nachteil bei dieser Version ist, das beim Verwenden vom Programm auf einem anderen Rechner der Pfad "free_dyn_exe" angepasst werden muss.
 
@@ -99,23 +100,23 @@ Danach muss das Programm Schritt für Schritt (von oben nach unten) durchgegange
 - Die Ausgaben (Rauschsignal, Übertragungsfunktion) werden als txt gespeichert.
 
 ## Implementierungsdetails
-
-    Interessante Algorithmen oder Ansätze
-    Herausforderungen, die Sie gelöst haben
-    Überlegungen zur Leistung
+- Interaktion mit Freedyn -> Modul API oder command(...)
+- Richtige Fehlerausgabe über das Fenster -> Sicherheitsprüfung
+- Überblick behalten -> Struktur
+- Richtige Befehle -> Foren & ChatGPT
 
 ## Screenshots
 Das Fenster im Ausgangszustand:
-![Ausgangsfenster](code/assets/Ausgang_Fenster.png)
+![Ausgang_Fenster](code/assets/Ausgang_Fenster.png)
 
 Das Fenster unter dem Thema:Rausche nach dem das Rauschsignal exportiert wurde:
-![Ausgangsfenster](code/assets/Rauschen_Fenster.png)
+![Rauschen_Fenster](code/assets/Rauschen_Fenster.png)
 
 Das Fenster unter dem Thema:Simulation nach dem die Simulation dargestellt wurde:
-![Ausgangsfenster](code/assets/Rauschen_Fenster.png)
+![Simulation_Fenster](code/assets/Simulation_Fenster.png)
 
 Das Fenster unter dem Thema:Übertragungsfunktion nach dem die Übertragungsfunktion exportiert wurde:
-![Ausgangsfenster](code/assets/Rauschen_Fenster.png)
+![Uebertragungsfunktion_Fenster](code/assets/Uebertragungsfunktion_Fenster.png)
 
 ## Zukünftige Verbesserungen (optional)
 Weitere Ideen, die im Programm implementiert werden könnten, sind:

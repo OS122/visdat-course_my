@@ -109,7 +109,7 @@ class Fenster(QMainWindow):
         filename, _ = QFileDialog.getOpenFileName(
             self,
             "Auswählen Freedyn Simulations Datei", 
-            os.path.join(os.path.dirname(__file__), "data_2"),
+            os.path.join(os.path.dirname(__file__), "data"),
             "VTK Files (*.fds);;All Files (*.*)"
         )
         
@@ -352,7 +352,7 @@ class Fenster(QMainWindow):
             Rauschsignal = np.column_stack((self.t_vec, self.x_noise))
 
             # Vorschlagsverzeichnis
-            default_dir = Path(__file__).parent / "data_2"
+            default_dir = Path(__file__).parent / "data"
             default_dir.mkdir(exist_ok=True)
 
             filename, _ = QFileDialog.getSaveFileName(
@@ -414,6 +414,7 @@ class Fenster(QMainWindow):
 
             command = [str(free_dyn_exe), str(fds_base) + ".fds"]
 
+            # Simulation starten
             self.statusBar().showMessage("Simulation läuft ...")
             subprocess.run(command, check=False)
 
@@ -607,7 +608,7 @@ class Fenster(QMainWindow):
             h = np.column_stack((self.t_mes[: len(self.h)], self.h.real))
 
             # Vorschlagsverzeichnis
-            default_dir = Path(__file__).parent / "data_2"
+            default_dir = Path(__file__).parent / "data"
             default_dir.mkdir(exist_ok=True)
 
             filename, _ = QFileDialog.getSaveFileName(
