@@ -1,59 +1,57 @@
 ---
 marp: true
+theme: default
 paginate: true
-footer: "VIS3VO · Student Introduction · Oliver Straßl"
 ---
 
-# Student Introduction
-## Oliver Straßl
-
-Master Mechanical Engineering · 3rd Semester  
-FH OÖ Wels
+# Übertragungsfunktionsrechner über Freedyn
+**Oliver Straßl**
+Visualisierung und Datenverarbeitung – Abschlussprojekt
 
 ---
 
-## About Me
-
-- **Background:** HTL Salzburg Maschinenbau
-- **Experience:** Programmieren in Mathlab und Scilab
-- **Interests:** Visualisierung
+## Problem / Motivation
+- Welches Problem lösen Sie?
+- Warum ist das nützlich?
 
 ---
 
-## Technical Skills
-
-### Programming
-- **Comfortable with:** Mathlab, Scilab
-- **Learning:** Erstellen einer Marp Slide Presentation
-
-### Engineering Tools
-- [List relevant engineering software/tools]
-- **CAD:** Solidworks, Creo und Inventor
-- **Simulation:** Abaqus, Femfat, Altair Inspirer, ADAMS, Ansy Fluent
----
-
-## Course Expectations
-
-### What I want to learn:
-- Programmieren mit Python
-- Erstellen guter Visualisierungen 
-- Arbeiten mit Git
-
-### Data I work with:
-- Daten aus Messungen (Labor & Fallstudien)
+## Ansatz
+- Überblick über Ihre Lösung
+- Verwendete Schlüsseltechnologien
 
 ---
 
-## Questions & Goals
-
-### Questions:
-- Ich habe zur Zeit noch keine konkreten Fragen.
-
-### Goals:
-- Python Kenntnisse
-- Gute Visualisierungen erstellen
-- Arbeiten mit Git
+## Highlights der Umsetzung
+- Interessante Details zu Code/Algorithmen
+- Screenshots Ihrer Anwendung
 
 ---
 
-Thank you! 🚀
+## Demo
+Live-Demonstration oder Video/GIF
+
+---
+
+## Ergebnisse
+- Was funktioniert gut?
+- Leistungskennzahlen (falls zutreffend)
+
+---
+
+## Herausforderungen und Lösungen
+- Was war schwierig?
+- Wie haben Sie diese Schwierigkeiten überwunden?
+
+---
+
+## Gewonnene Erkenntnisse
+- Was haben Sie aus diesem Projekt gelernt?
+- Welche Fähigkeiten haben Sie entwickelt?
+
+---
+
+## Danksagung
+Fragen?
+
+Übersetzt mit DeepL.com (kostenlose Version)

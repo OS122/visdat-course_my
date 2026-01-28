@@ -150,6 +150,34 @@ class Fenster(QMainWindow):
         control_layout.addWidget(self.field_combo)
 
         # --------------------------------------------
+        # Parameter Gruppe – Rauschen
+        self.noise_param_group = QGroupBox("Rauschparameter")
+        param_layout = QVBoxLayout()
+        self.noise_param_group.setLayout(param_layout)
+
+        self.input_fs = QLineEdit(str(self.noise_params["fs"]))
+        param_layout.addWidget(QLabel("Abtastfrequenz fs [Hz]"))
+        param_layout.addWidget(self.input_fs)
+
+        self.input_T1 = QLineEdit(str(self.noise_params["T1"]))
+        param_layout.addWidget(QLabel("T1 – Ramp-Up Ende [s]"))
+        param_layout.addWidget(self.input_T1)
+
+        self.input_T2 = QLineEdit(str(self.noise_params["T2"]))
+        param_layout.addWidget(QLabel("T2 – Ramp-Down Start [s]"))
+        param_layout.addWidget(self.input_T2)
+
+        self.input_T3 = QLineEdit(str(self.noise_params["T3"]))
+        param_layout.addWidget(QLabel("T3 – Ramp-Down Ende [s]"))
+        param_layout.addWidget(self.input_T3)
+
+        self.input_dt = QLineEdit(str(self.noise_params["dt"]))
+        param_layout.addWidget(QLabel("Zeitschritt dt [s]"))
+        param_layout.addWidget(self.input_dt)
+
+        control_layout.addWidget(self.noise_param_group)
+
+        # --------------------------------------------
         # Tasten – einmal erzeugen
         self.btn_noise_clalc = QPushButton("Rauschen erzeugen")
         self.btn_noise_clalc.clicked.connect(self.generate_noise)
@@ -159,7 +187,7 @@ class Fenster(QMainWindow):
         self.btn_noise_plot.clicked.connect(self.plot_noise)
         control_layout.addWidget(self.btn_noise_plot)
 
-        self.btn_F_safe = QPushButton("Kraft exportieren")
+        self.btn_F_safe = QPushButton("Rauschsignal exportieren")
         self.btn_F_safe.clicked.connect(self.safe_Force_function)
         control_layout.addWidget(self.btn_F_safe)
 
@@ -189,34 +217,6 @@ class Fenster(QMainWindow):
         self.btn_tf_calc.setVisible(False)
         self.btn_tf_plot.setVisible(False)
         self.btn_tf_safe.setVisible(False)
-
-        # --------------------------------------------
-        # Parameter Gruppe – Rauschen
-        self.noise_param_group = QGroupBox("Rauschparameter")
-        param_layout = QVBoxLayout()
-        self.noise_param_group.setLayout(param_layout)
-
-        self.input_fs = QLineEdit(str(self.noise_params["fs"]))
-        param_layout.addWidget(QLabel("Abtastfrequenz fs [Hz]"))
-        param_layout.addWidget(self.input_fs)
-
-        self.input_T1 = QLineEdit(str(self.noise_params["T1"]))
-        param_layout.addWidget(QLabel("T1 – Ramp-Up Ende [s]"))
-        param_layout.addWidget(self.input_T1)
-
-        self.input_T2 = QLineEdit(str(self.noise_params["T2"]))
-        param_layout.addWidget(QLabel("T2 – Ramp-Down Start [s]"))
-        param_layout.addWidget(self.input_T2)
-
-        self.input_T3 = QLineEdit(str(self.noise_params["T3"]))
-        param_layout.addWidget(QLabel("T3 – Ramp-Down Ende [s]"))
-        param_layout.addWidget(self.input_T3)
-
-        self.input_dt = QLineEdit(str(self.noise_params["dt"]))
-        param_layout.addWidget(QLabel("Zeitschritt dt [s]"))
-        param_layout.addWidget(self.input_dt)
-
-        control_layout.addWidget(self.noise_param_group)
 
         # --------------------------------------------
         # Fixed width for control panel
@@ -342,7 +342,7 @@ class Fenster(QMainWindow):
 
             # ------------------------------------------------------------
             # Eingangssignal (Kraft) exportieren
-            Kraft = np.column_stack((self.t_vec, self.x_noise))
+            Rauschsignal = np.column_stack((self.t_vec, self.x_noise))
 
             # Vorschlagsverzeichnis
             default_dir = Path(__file__).parent / "data_2"
@@ -350,7 +350,7 @@ class Fenster(QMainWindow):
 
             filename, _ = QFileDialog.getSaveFileName(
                 self,  # Parent = Hauptfenster
-                "Exportieren der Kraft-Datei",
+                "Exportieren der Rauschsignal-Datei",
                 str(default_dir / "Kraft.txt"),
                 "Textdatei (*.txt)"
             )
@@ -360,25 +360,19 @@ class Fenster(QMainWindow):
 
             np.savetxt(
                 filename,
-                Kraft,
+                Rauschsignal,
                 header="Zeit [s]\tKraft [N]",
                 comments=""
             )
 
             self.statusBar().showMessage(
-                f"Kraftsignal gespeichert: {filename}",
-                4000
+                f"Rauschsignal gespeichert",
+                6000
             )
 
             # Für Sicherheitsüberprüfung bei der Funktion run_simulation
             self.F_safe = 1
-
-            # ------------------------------------------------------------
-            self.statusBar().showMessage(
-                "Kraft gespeichert",
-                3000
-            )
-            
+           
     # ------------------------------------------------------------
     # Definition Funktion Simulation durchführen
     def run_simulation(self):
@@ -387,7 +381,7 @@ class Fenster(QMainWindow):
             # 1) Sicherheitsprüfung
             if not hasattr(self, "F_safe"):
                 self.statusBar().showMessage(
-                    "Fehler: Kein Eingangssignal vorhanden (zuerst Kraft speichern)",
+                    "Fehler: Kein Eingangssignal vorhanden (zuerst Rauschsignal speichern)",
                     5000
                 )
                 return
@@ -402,9 +396,8 @@ class Fenster(QMainWindow):
             # ------------------------------------------------------------
             # 3) Simulation mit FreeDyn
 
-            free_dyn_exe = Path(
-                r"C:\FreeDyn_Release_2024_9\FreeDyn_2024.9\bin\FreeDyn.exe"
-            )
+            # Muss für den PC angepasst werden.             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            free_dyn_exe = Path(r"C:\FreeDyn_Release_2024_9\FreeDyn_2024.9\bin\FreeDyn.exe")
 
             if not free_dyn_exe.exists():
                 raise FileNotFoundError("FreeDyn.exe nicht gefunden")
