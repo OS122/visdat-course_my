@@ -567,7 +567,7 @@ class Fenster(QMainWindow):
         # ------------------------------------------------------------
         # Plot vorbereiten
         # Figure zurücksetzen (aber NICHT neu erstellen!)
-        self.reset_figure()
+        self.fig.clear()
 
         ax1 = self.fig.add_subplot(2, 1, 1)
         ax1.plot(self.f_vec, np.abs(self.H))
@@ -624,13 +624,8 @@ class Fenster(QMainWindow):
             np.savetxt(
                 filename,
                 h,
-                header="Zeit [s]\tKraft [N]",
+                header="Zeit [s]\tUebertragungsfunktion",
                 comments=""
-            )
-
-            self.statusBar().showMessage(
-                f"Kraftsignal gespeichert: {filename}",
-                4000
             )
 
             # ------------------------------------------------------------
